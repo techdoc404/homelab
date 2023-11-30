@@ -51,8 +51,8 @@ services:
       - PGID=1000
       - TZ=America/Chicago
 
-  networks:
-    web:
-      external: true
-    unifi:
-      driver: "bridge"
+networks:
+  web:
+    external: true
+  unifi:
+    driver: "bridge"
