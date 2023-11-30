@@ -4,6 +4,9 @@ services:
   unifi-network-application:
     image: lscr.io/linuxserver/unifi-network-application:latest
     container_name: unifi-network-application
+    depends_on:
+      unifi-db:
+        condition: service_healthy
     environment:
       - PUID=1000
       - PGID=1000
@@ -24,11 +27,11 @@ services:
       - 3478:3478/udp
       - 10001:10001/udp
       - 8080:8080
-      - 1900:1900/udp #optional
-      - 8843:8843 #optional
-      - 8880:8880 #optional
-      - 6789:6789 #optional
-      - 5514:5514/udp #optional
+     # - 1900:1900/udp #optional
+     # - 8843:8843 #optional
+     # - 8880:8880 #optional
+     # - 6789:6789 #optional
+     # - 5514:5514/udp #optional
     restart: unless-stopped
     labels:
       - traefik.http.routers.unifi.rule=Host(`unifi`) || Host(`uc`)
@@ -40,7 +43,7 @@ services:
       - unifi
       
   unifi-db:
-    image: docker.io/mongo:4.4
+    image: docker.io/mongo:4.4.18
     container_name: unifi-db
     volumes:
       - /opt/unifi/unifi-db/data:/data/db
@@ -50,6 +53,14 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=America/Chicago
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - unifi
 
 networks:
   web:
